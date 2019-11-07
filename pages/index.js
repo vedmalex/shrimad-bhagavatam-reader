@@ -7,11 +7,13 @@ import { useRouter } from 'next/router';
 const Home = () => {
   const router = useRouter();
   let chapters = router.query.ch;
-  let verses = router.query.verse;
-  let purport = router.query.purport;
-  let wbw = router.query.wbw;
-  let translation = router.query.translation;
-  let sanskrit = router.query.sanskrit;
+  let verses = router.query.verse || '1-100';
+  let purport = parseInt(router.query.purport || '1', 10);
+  let wbw = parseInt(router.query.wbw || '1', 10);
+  let translation = parseInt(router.query.translation || '1', 10);
+  let sanskrit = parseInt(router.query.sanskrit || '1', 10);
+  // подсчитать слова для вывода на экран
+  // интегрировать с полнотекстовым поиском algolia или что-то подобное
 
   let result;
   if (chapters) {
@@ -26,8 +28,14 @@ const Home = () => {
         verses = verses.map(f => parseInt(f, 10));
         filter = txt => txt.text.some(t => verses.indexOf(t) > -1);
       } else {
-        verses = parseInt(verses, 10);
-        filter = txt => txt.text.indexOf(verses) > -1;
+        verses = verses.split('-');
+        if (verses.length > 1) {
+          filter = txt => txt.text.some(t => t <= verses[1] && t >= verses[0]);
+        } else {
+          verses = verses[0];
+          verses = parseInt(verses, 10);
+          filter = txt => txt.text.indexOf(verses) > -1;
+        }
       }
       result = [
         {
@@ -50,7 +58,7 @@ const Home = () => {
               <>
                 <div key={`${ch.number}${t.number}`}>{t.text.join('—')}</div>
                 <div>{sanskrit && t.sanskrit.map(s => <div>{s}</div>)}</div>
-                {wbw && (
+                {wbw ? (
                   <div>
                     <div>пословный перевод</div>
                     {t.wbw.map((wbw, index) => (
@@ -61,14 +69,18 @@ const Home = () => {
                       </span>
                     ))}
                   </div>
+                ) : (
+                  ''
                 )}
-                {translation && (
+                {translation ? (
                   <>
                     <div>Перевод</div>
                     <div>{t.translation}</div>
                   </>
+                ) : (
+                  ''
                 )}
-                {purport && t.purport && (
+                {purport && t.purport ? (
                   <>
                     <div>Комментарий</div>
                     <div>
@@ -77,6 +89,8 @@ const Home = () => {
                       ))}
                     </div>
                   </>
+                ) : (
+                  ''
                 )}
               </>
             ))}
