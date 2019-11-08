@@ -1,8 +1,7 @@
-import React from 'react';
-
 import SB from '../lib/SB3.json';
 
 import { useRouter } from 'next/router';
+import { Typography, Card, CardContent } from '@material-ui/core';
 
 const Home = () => {
   const router = useRouter();
@@ -49,55 +48,74 @@ const Home = () => {
   }
 
   return (
-    <div>
-      {result.map(ch => (
-        <div>
-          {ch.number} - {ch.name}
+    <Card>
+      <CardContent>
+        {result.map(ch => (
           <div>
-            {ch.texts.map(t => (
-              <>
-                <div key={`${ch.number}${t.number}`}>{t.text.join('—')}</div>
-                <div>{sanskrit && t.sanskrit.map(s => <div>{s}</div>)}</div>
-                {wbw ? (
-                  <div>
-                    <div>пословный перевод</div>
-                    {t.wbw.map((wbw, index) => (
-                      <span>
-                        {' '}
-                        {wbw[0]} - {wbw[1]}
-                        {index < t.wbw.length - 1 ? ';' : ''}
-                      </span>
-                    ))}
-                  </div>
-                ) : (
-                  ''
-                )}
-                {translation ? (
-                  <>
-                    <div>Перевод</div>
-                    <div>{t.translation}</div>
-                  </>
-                ) : (
-                  ''
-                )}
-                {purport && t.purport ? (
-                  <>
-                    <div>Комментарий</div>
-                    <div>
-                      {t.purport.map(s => (
-                        <div>{s}</div>
-                      ))}
-                    </div>
-                  </>
-                ) : (
-                  ''
-                )}
-              </>
-            ))}
+            <Typography variant="h4">
+              Глава {ch.number} "{ch.name}"
+            </Typography>
+            <div>
+              {ch.texts.map(t => (
+                <>
+                  <Typography variant="h5" key={`${ch.number}${t.number}`}>
+                    {' '}
+                    Текст {t.text.join('—')}
+                  </Typography>
+                  <Typography paragraph>
+                    <strong>
+                      {sanskrit &&
+                        t.sanskrit.map((s, index) => (
+                          <>
+                            {s}
+                            {index < s.length - 1 ? <br /> : ''}
+                          </>
+                        ))}
+                    </strong>
+                  </Typography>
+                  {wbw ? (
+                    <>
+                      <Typography paragraph>
+                        {t.wbw.map((wbw, index) => (
+                          <>
+                            {' '}
+                            <strong>{wbw[0]}</strong> - {wbw[1]}
+                            {index < t.wbw.length - 1 ? ';' : ''}
+                          </>
+                        ))}
+                      </Typography>
+                    </>
+                  ) : (
+                    ''
+                  )}
+                  {translation ? (
+                    <>
+                      <Typography paragraph>
+                        <strong>{t.translation}</strong>
+                      </Typography>
+                    </>
+                  ) : (
+                    ''
+                  )}
+                  {purport && t.purport ? (
+                    <>
+                      <Typography variant="h6">Комментарий</Typography>
+                      <>
+                        {t.purport.map(s => (
+                          <Typography paragraph>{s}</Typography>
+                        ))}
+                      </>
+                    </>
+                  ) : (
+                    ''
+                  )}
+                </>
+              ))}
+            </div>
           </div>
-        </div>
-      ))}
-    </div>
+        ))}
+      </CardContent>
+    </Card>
   );
 };
 
