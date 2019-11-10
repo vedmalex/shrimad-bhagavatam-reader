@@ -1,121 +1,318 @@
-import SB from '../lib/SB3.json';
+import {
+  Typography,
+  Card,
+  CardContent,
+  FormControl,
+  FormGroup,
+  Checkbox,
+  FormControlLabel,
+  FormLabel,
+  Slider,
+  Select,
+  InputLabel,
+  MenuItem,
+  TextField,
+  Button
+} from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
+import { useState } from 'react';
 
-import { useRouter } from 'next/router';
-import { Typography, Card, CardContent } from '@material-ui/core';
+import verseTime from '../lib/verseTime';
+import { useFetch } from '../lib/useFetch';
+
+const useStyles = makeStyles({
+  root: {
+    margin: 10,
+    display: 'flex',
+    flexWrap: 'wrap',
+    flexDirection: 'row'
+  },
+  slider: {
+    marginTop: 30,
+    marginBottom: 30
+  }
+});
 
 const Home = () => {
-  const router = useRouter();
-  let chapters = router.query.ch;
-  let verses = router.query.verse || '1-100';
-  let purport = parseInt(router.query.purport || '1', 10);
-  let wbw = parseInt(router.query.wbw || '1', 10);
-  let translation = parseInt(router.query.translation || '1', 10);
-  let sanskrit = parseInt(router.query.sanskrit || '1', 10);
+  let classes = useStyles();
+  const [show, changeShow] = useState({
+    chapterStart: 1,
+    verseStart: 1,
+    chapterEnd: 1,
+    verseEnd: 100,
+    sanskrit: 1,
+    wbw: 1,
+    translation: 1,
+    purport: 1,
+    words: 1800,
+    useWordsCount: 0
+  });
+
+  let {
+    chapterStart,
+    chapterEnd,
+    verseStart,
+    verseEnd,
+    purport,
+    wbw,
+    translation,
+    sanskrit,
+    words,
+    useWordsCount
+  } = show;
   // подсчитать слова для вывода на экран
   // интегрировать с полнотекстовым поиском algolia или что-то подобное
 
-  let result;
-  if (chapters) {
-    if (Array.isArray(chapters)) {
-      chapters = chapters.map(c => parseInt(c, 10));
-      result = SB.filter(ch => chapters.indexOf(ch.number) > -1);
-    } else {
-      chapters = parseInt(chapters, 10);
-      result = SB.filter(ch => chapters === ch.number);
-      let filter;
-      if (Array.isArray(verses)) {
-        verses = verses.map(f => parseInt(f, 10));
-        filter = txt => txt.text.some(t => verses.indexOf(t) > -1);
-      } else {
-        verses = verses.split('-');
-        if (verses.length > 1) {
-          filter = txt => txt.text.some(t => t <= verses[1] && t >= verses[0]);
-        } else {
-          verses = verses[0];
-          verses = parseInt(verses, 10);
-          filter = txt => txt.text.indexOf(verses) > -1;
-        }
-      }
-      result = [
-        {
-          ...result[0],
-          texts: result[0].texts.filter(filter),
-        },
-      ];
-    }
-  } else {
-    result = [];
+  let result = [],
+    textCount = 100;
+  let [texts, textsLoading] = useFetch(`/api/chapter?n=${chapterStart}`);
+  let [chapter, chapterLoading] = useFetch(`/api/canto?n=${chapterStart}`);
+  let [allChapters, allChapterLoading] = useFetch(`/api/canto`);
+  let [allSizes, allSizesLoading] = useFetch(
+    useWordsCount
+      ? `/api/sizes?chapter=${chapterStart}&verse=${verseStart}&words=${words}`
+      : `/api/sizes?chapter=${chapterStart}&verse=${verseStart}`
+  );
+
+  if (
+    useWordsCount &&
+    !allSizesLoading &&
+    allSizes[allSizes.length - 1].text[0] !== verseEnd
+  ) {
+    changeShow({
+      ...show,
+      verseEnd: allSizes[allSizes.length - 1].text[0]
+    });
   }
 
+  if (!chapterLoading && !textsLoading && !allChapterLoading) {
+    textCount = texts.length;
+    debugger;
+    result = [
+      {
+        ...chapter,
+        texts: texts.filter(txt =>
+          txt.text.some(t => t <= verseEnd && t >= verseStart)
+        )
+      }
+    ];
+  }
+
+  const change = item => e => {
+    e.preventDefault();
+    changeShow({
+      ...show,
+      [item]: e.currentTarget.checked ? 1 : 0
+    });
+  };
+
+  const changeVerses = (e, newValue) => {
+    e.preventDefault();
+    changeShow({
+      ...show,
+      verseStart: newValue[0],
+      verseEnd: newValue[1]
+    });
+  };
+
+  const changeChapter = event => {
+    changeShow({
+      ...show,
+      chapterStart: event.target.value,
+      verseStart: 1,
+      verseEnd: 100
+    });
+  };
+
+  const wordsChange = event => {
+    changeShow({
+      ...show,
+      words: event.target.value
+    });
+  };
+
   return (
-    <Card>
-      <CardContent>
-        {result.map(ch => (
-          <div>
-            <Typography variant="h4">
-              Глава {ch.number} "{ch.name}"
-            </Typography>
-            <div>
-              {ch.texts.map(t => (
-                <>
-                  <Typography variant="h5" key={`${ch.number}${t.number}`}>
-                    {' '}
-                    Текст {t.text.join('—')}
-                  </Typography>
-                  <Typography paragraph>
-                    <strong>
-                      {sanskrit &&
-                        t.sanskrit.map((s, index) => (
-                          <>
-                            {s}
-                            {index < s.length - 1 ? <br /> : ''}
-                          </>
-                        ))}
-                    </strong>
-                  </Typography>
-                  {wbw ? (
-                    <>
-                      <Typography paragraph>
-                        {t.wbw.map((wbw, index) => (
-                          <>
-                            {' '}
-                            <strong>{wbw[0]}</strong> - {wbw[1]}
-                            {index < t.wbw.length - 1 ? ';' : ''}
-                          </>
-                        ))}
-                      </Typography>
-                    </>
-                  ) : (
-                    ''
-                  )}
-                  {translation ? (
-                    <>
-                      <Typography paragraph>
-                        <strong>{t.translation}</strong>
-                      </Typography>
-                    </>
-                  ) : (
-                    ''
-                  )}
-                  {purport && t.purport ? (
-                    <>
-                      <Typography variant="h6">Комментарий</Typography>
+    <>
+      <FormControl component="fieldset" className={classes.root}>
+        <FormLabel component="legend">Что смотреть</FormLabel>
+        <FormGroup aria-label="position" row>
+          <FormControlLabel
+            checked={!!show.sanskrit}
+            control={<Checkbox color="primary" />}
+            label="Санскрит"
+            onChange={change('sanskrit')}
+          />
+          <FormControlLabel
+            checked={!!show.wbw}
+            control={<Checkbox color="primary" />}
+            label="Пословный перевод"
+            onChange={change('wbw')}
+          />
+          <FormControlLabel
+            checked={!!show.translation}
+            control={<Checkbox color="primary" />}
+            label="Перевод"
+            onChange={change('translation')}
+          />
+          <FormControlLabel
+            checked={!!show.purport}
+            control={<Checkbox color="primary" />}
+            label="Комментарии"
+            onChange={change('purport')}
+          />
+          <FormControlLabel
+            checked={!!show.useWordsCount}
+            control={<Checkbox color="primary" />}
+            label="использовать количество слов"
+            onChange={change('useWordsCount')}
+          />
+          <TextField
+            id="words count"
+            label="Количество слов"
+            type="number"
+            InputLabelProps={{
+              shrink: true
+            }}
+            margin="normal"
+            value={words}
+            onChange={wordsChange}
+          />
+          <FormControl className={classes.formControl}>
+            <InputLabel id="demo-simple-select-label">Глава</InputLabel>
+            <Select
+              labelId="demo-simple-select-label"
+              id="demo-simple-select"
+              value={chapterStart}
+              onChange={changeChapter}
+            >
+              {allChapterLoading ? (
+                <MenuItem value={chapterStart}>Глава</MenuItem>
+              ) : (
+                allChapters.map((ch, index) => (
+                  <MenuItem key={index} value={ch.number}>
+                    {ch.number}. {ch.name}
+                  </MenuItem>
+                ))
+              )}
+            </Select>
+          </FormControl>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              if (useWordsCount) {
+                changeShow({
+                  ...show,
+                  verseStart: verseEnd + 1
+                });
+              }
+            }}
+          >
+            Следующий
+          </Button>
+          <Slider
+            className={classes.slider}
+            valueLabelDisplay="auto"
+            aria-labelledby="range-slider"
+            value={[show.verseStart, show.verseEnd]}
+            label="Тексты"
+            valueLabelDisplay="on"
+            onChange={changeVerses}
+            min={1}
+            max={textCount}
+          />
+        </FormGroup>
+      </FormControl>
+      {chapterLoading ? (
+        'Вспоминаем'
+      ) : (
+        <Card>
+          <CardContent>
+            {result.map((ch, chI) => (
+              <div key={chI}>
+                <Typography variant="h4" key={`${chI}-глава`}>
+                  Глава {ch.number} "{ch.name}"
+                </Typography>
+                {ch.texts.map((t, tI) => (
+                  <div key={`${chI}${tI}`}>
+                    <Typography variant="h5" key={`${chI}${tI}`}>
+                      {' '}
+                      Текст {t.text.join('—')}
+                    </Typography>
+                    <Typography paragraph key={`${chI}${tI}sans`}>
+                      <strong>
+                        {sanskrit
+                          ? t.sanskrit.map((s, sI) => (
+                              <span key={`${chI}${tI}${sI}`}>
+                                {s}
+                                {sI < s.length - 1 ? <br /> : ''}
+                              </span>
+                            ))
+                          : ''}
+                      </strong>
+                    </Typography>
+                    {wbw ? (
+                      <div key={`${chI}${tI}wbw`}>
+                        <Typography
+                          paragraph
+                          key={`${ch.name}-пословный перевод`}
+                        >
+                          {t.wbw.map((wbw, wI) => (
+                            <span key={`${chI}${tI}wbw${wI}`}>
+                              {' '}
+                              <strong>{wbw[0]}</strong> - {wbw[1]}
+                              {wI < t.wbw.length - 1 ? ';' : ''}
+                            </span>
+                          ))}
+                        </Typography>
+                      </div>
+                    ) : (
+                      ''
+                    )}
+                    {translation ? (
+                      <div key={`${chI}${tI}tr`}>
+                        <Typography paragraph key={`${ch.name}-перевод`}>
+                          <strong>{t.translation}</strong>
+                        </Typography>
+                      </div>
+                    ) : (
+                      ''
+                    )}
+                    {purport && t.purport ? (
                       <>
-                        {t.purport.map(s => (
-                          <Typography paragraph>{s}</Typography>
-                        ))}
+                        <Typography
+                          variant="h6"
+                          key={`${chI}${tI}-комменатарий`}
+                        >
+                          Комментарий
+                        </Typography>
+                        <>
+                          {t.purport.map((s, pI) => (
+                            <Typography
+                              paragraph
+                              key={`${chI}${tI}-комментарий-${pI}`}
+                            >
+                              {s}
+                            </Typography>
+                          ))}
+                          {t.footnote ? (
+                            <Typography>{t.footnote}</Typography>
+                          ) : (
+                            ''
+                          )}
+                        </>
                       </>
-                    </>
-                  ) : (
-                    ''
-                  )}
-                </>
-              ))}
-            </div>
-          </div>
-        ))}
-      </CardContent>
-    </Card>
+                    ) : (
+                      ''
+                    )}
+                  </div>
+                ))}
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+    </>
   );
 };
 

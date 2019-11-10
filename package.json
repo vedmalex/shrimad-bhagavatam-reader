@@ -5,11 +5,16 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "export": "next export",
+    "deploy": "now --prod",
+    "surge": "surge ./out nektar-of-shrimad-bhagavatam.surge.sh"
   },
   "dependencies": {
     "@material-ui/core": "^4.6.0",
     "@material-ui/icons": "^4.5.1",
+    "isomorphic-unfetch": "^3.0.0",
+    "lodash": "^4.17.15",
     "next": "9.1.2",
     "react": "16.11.0",
     "react-dom": "16.11.0"
