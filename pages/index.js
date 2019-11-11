@@ -320,5 +320,6 @@ const Home = () => {
 //   const apolloClient = ctx.apolloClient;
 // здесь вернуть данные какие нужны
 // };
+// посмотреть https://docs.react-async.com/guide/async-components
 
 export default Home;
