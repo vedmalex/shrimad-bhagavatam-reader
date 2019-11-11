@@ -12,7 +12,7 @@ import {
   InputLabel,
   MenuItem,
   TextField,
-  Button
+  Button,
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import { useState } from 'react';
@@ -25,12 +25,12 @@ const useStyles = makeStyles({
     margin: 10,
     display: 'flex',
     flexWrap: 'wrap',
-    flexDirection: 'row'
+    flexDirection: 'row',
   },
   slider: {
     marginTop: 30,
-    marginBottom: 30
-  }
+    marginBottom: 30,
+  },
 });
 
 const Home = () => {
@@ -45,7 +45,7 @@ const Home = () => {
     translation: 1,
     purport: 1,
     words: 1800,
-    useWordsCount: 0
+    useWordsCount: 0,
   });
 
   let {
@@ -58,7 +58,7 @@ const Home = () => {
     translation,
     sanskrit,
     words,
-    useWordsCount
+    useWordsCount,
   } = show;
   // подсчитать слова для вывода на экран
   // интегрировать с полнотекстовым поиском algolia или что-то подобное
@@ -71,7 +71,7 @@ const Home = () => {
   let [allSizes, allSizesLoading] = useFetch(
     useWordsCount
       ? `/api/sizes?chapter=${chapterStart}&verse=${verseStart}&words=${words}`
-      : `/api/sizes?chapter=${chapterStart}&verse=${verseStart}`
+      : `/api/sizes?chapter=${chapterStart}&verse=${verseStart}`,
   );
 
   if (
@@ -81,7 +81,7 @@ const Home = () => {
   ) {
     changeShow({
       ...show,
-      verseEnd: allSizes[allSizes.length - 1].text[0]
+      verseEnd: allSizes[allSizes.length - 1].text[0],
     });
   }
 
@@ -92,9 +92,9 @@ const Home = () => {
       {
         ...chapter,
         texts: texts.filter(txt =>
-          txt.text.some(t => t <= verseEnd && t >= verseStart)
-        )
-      }
+          txt.text.some(t => t <= verseEnd && t >= verseStart),
+        ),
+      },
     ];
   }
 
@@ -102,7 +102,7 @@ const Home = () => {
     e.preventDefault();
     changeShow({
       ...show,
-      [item]: e.currentTarget.checked ? 1 : 0
+      [item]: e.currentTarget.checked ? 1 : 0,
     });
   };
 
@@ -111,7 +111,7 @@ const Home = () => {
     changeShow({
       ...show,
       verseStart: newValue[0],
-      verseEnd: newValue[1]
+      verseEnd: newValue[1],
     });
   };
 
@@ -120,14 +120,14 @@ const Home = () => {
       ...show,
       chapterStart: event.target.value,
       verseStart: 1,
-      verseEnd: 100
+      verseEnd: 100,
     });
   };
 
   const wordsChange = event => {
     changeShow({
       ...show,
-      words: event.target.value
+      words: event.target.value,
     });
   };
 
@@ -171,7 +171,7 @@ const Home = () => {
             label="Количество слов"
             type="number"
             InputLabelProps={{
-              shrink: true
+              shrink: true,
             }}
             margin="normal"
             value={words}
@@ -203,7 +203,7 @@ const Home = () => {
               if (useWordsCount) {
                 changeShow({
                   ...show,
-                  verseStart: verseEnd + 1
+                  verseStart: verseEnd + 1,
                 });
               }
             }}
@@ -315,5 +315,10 @@ const Home = () => {
     </>
   );
 };
+
+// Home.getInitialProps = ctx => {
+//   const apolloClient = ctx.apolloClient;
+// здесь вернуть данные какие нужны
+// };
 
 export default Home;
