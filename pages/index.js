@@ -17,8 +17,10 @@ import {
 import { makeStyles } from '@material-ui/core/styles';
 import { useState } from 'react';
 
+import { useQuery } from '@apollo/react-hooks';
 import verseTime from '../lib/verseTime';
 import { useFetch } from '../lib/useFetch';
+import { ALL_CHAPTERS_QUERY, SELECTED_TEXTS } from '../lib/queries';
 
 const useStyles = makeStyles({
   root: {
@@ -39,11 +41,11 @@ const Home = () => {
     chapterStart: 1,
     verseStart: 1,
     chapterEnd: 1,
-    verseEnd: 100,
-    sanskrit: 1,
-    wbw: 1,
-    translation: 1,
-    purport: 1,
+    verseEnd: 5,
+    sanskrit: true,
+    wbw: true,
+    translation: true,
+    purport: true,
     words: 1800,
     useWordsCount: 0,
   });
@@ -63,11 +65,38 @@ const Home = () => {
   // подсчитать слова для вывода на экран
   // интегрировать с полнотекстовым поиском algolia или что-то подобное
 
-  let result = [],
-    textCount = 100;
-  let [texts, textsLoading] = useFetch(`/api/chapter?n=${chapterStart}`);
-  let [chapter, chapterLoading] = useFetch(`/api/canto?n=${chapterStart}`);
-  let [allChapters, allChapterLoading] = useFetch(`/api/canto`);
+  let {
+    data: chapterData,
+    loading: chapterLoading,
+    error: chapterError,
+  } = useQuery(SELECTED_TEXTS, {
+    variables: {
+      chapter: chapterStart,
+      verseStart,
+      verseEnd,
+      purport,
+      wbw,
+      translation,
+      sanskrit,
+      footnote: true,
+    },
+  });
+
+  let result = !chapterLoading && !chapterError ? [chapterData.chapters] : [];
+  let textCount =
+    !chapterLoading && !chapterError ? chapterData.size.verseCount : 100;
+
+  let {
+    data: allChaptersData,
+    loading: allChapterLoading,
+    error: allChaptersError,
+  } = useQuery(ALL_CHAPTERS_QUERY);
+
+  let allChapters =
+    !allChapterLoading && !allChaptersError
+      ? allChaptersData.chapters
+      : undefined;
+
   let [allSizes, allSizesLoading] = useFetch(
     useWordsCount
       ? `/api/sizes?chapter=${chapterStart}&verse=${verseStart}&words=${words}`
@@ -83,19 +112,6 @@ const Home = () => {
       ...show,
       verseEnd: allSizes[allSizes.length - 1].text[0],
     });
-  }
-
-  if (!chapterLoading && !textsLoading && !allChapterLoading) {
-    textCount = texts.length;
-    debugger;
-    result = [
-      {
-        ...chapter,
-        texts: texts.filter(txt =>
-          txt.text.some(t => t <= verseEnd && t >= verseStart),
-        ),
-      },
-    ];
   }
 
   const change = item => e => {
