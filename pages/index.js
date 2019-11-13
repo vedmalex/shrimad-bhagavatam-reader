@@ -12,7 +12,7 @@ import {
   InputLabel,
   MenuItem,
   TextField,
-  Button,
+  Button
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import { useState } from 'react';
@@ -21,18 +21,19 @@ import { useQuery } from '@apollo/react-hooks';
 import verseTime from '../lib/verseTime';
 import { useFetch } from '../lib/useFetch';
 import { ALL_CHAPTERS_QUERY, SELECTED_TEXTS } from '../lib/queries';
+import { isEqual } from 'lodash';
 
 const useStyles = makeStyles({
   root: {
     margin: 10,
     display: 'flex',
     flexWrap: 'wrap',
-    flexDirection: 'row',
+    flexDirection: 'row'
   },
   slider: {
     marginTop: 30,
-    marginBottom: 30,
-  },
+    marginBottom: 30
+  }
 });
 
 const Home = () => {
@@ -48,6 +49,8 @@ const Home = () => {
     purport: true,
     words: 1800,
     useWordsCount: 0,
+    textCount: 100,
+    result: []
   });
 
   let {
@@ -61,14 +64,14 @@ const Home = () => {
     sanskrit,
     words,
     useWordsCount,
+    textCount,
+    result
   } = show;
-  // подсчитать слова для вывода на экран
-  // интегрировать с полнотекстовым поиском algolia или что-то подобное
 
   let {
     data: chapterData,
     loading: chapterLoading,
-    error: chapterError,
+    error: chapterError
   } = useQuery(SELECTED_TEXTS, {
     variables: {
       chapter: chapterStart,
@@ -78,18 +81,35 @@ const Home = () => {
       wbw,
       translation,
       sanskrit,
-      footnote: true,
-    },
+      footnote: true
+    }
   });
 
-  let result = !chapterLoading && !chapterError ? [chapterData.chapters] : [];
-  let textCount =
-    !chapterLoading && !chapterError ? chapterData.size.verseCount : 100;
+  if (
+    !chapterLoading &&
+    !chapterError &&
+    !isEqual(result, chapterData.chapters)
+  ) {
+    changeShow({
+      ...show,
+      result: [chapterData.chapters]
+    });
+  }
+  if (
+    !chapterLoading &&
+    !chapterError &&
+    textCount != chapterData.size.verseCount
+  ) {
+    changeShow({
+      ...show,
+      textCount: chapterData.size.verseCount
+    });
+  }
 
   let {
     data: allChaptersData,
     loading: allChapterLoading,
-    error: allChaptersError,
+    error: allChaptersError
   } = useQuery(ALL_CHAPTERS_QUERY);
 
   let allChapters =
@@ -97,28 +117,28 @@ const Home = () => {
       ? allChaptersData.chapters
       : undefined;
 
-  let [allSizes, allSizesLoading] = useFetch(
-    useWordsCount
-      ? `/api/sizes?chapter=${chapterStart}&verse=${verseStart}&words=${words}`
-      : `/api/sizes?chapter=${chapterStart}&verse=${verseStart}`,
-  );
+  // let [allSizes, allSizesLoading] = useFetch(
+  //   useWordsCount
+  //     ? `/api/sizes?chapter=${chapterStart}&verse=${verseStart}&words=${words}`
+  //     : `/api/sizes?chapter=${chapterStart}&verse=${verseStart}`
+  // );
 
-  if (
-    useWordsCount &&
-    !allSizesLoading &&
-    allSizes[allSizes.length - 1].text[0] !== verseEnd
-  ) {
-    changeShow({
-      ...show,
-      verseEnd: allSizes[allSizes.length - 1].text[0],
-    });
-  }
+  // if (
+  //   useWordsCount &&
+  //   !allSizesLoading &&
+  //   allSizes[allSizes.length - 1].text[0] !== verseEnd
+  // ) {
+  //   changeShow({
+  //     ...show,
+  //     verseEnd: allSizes[allSizes.length - 1].text[0]
+  //   });
+  // }
 
   const change = item => e => {
     e.preventDefault();
     changeShow({
       ...show,
-      [item]: e.currentTarget.checked ? 1 : 0,
+      [item]: e.currentTarget.checked
     });
   };
 
@@ -127,7 +147,7 @@ const Home = () => {
     changeShow({
       ...show,
       verseStart: newValue[0],
-      verseEnd: newValue[1],
+      verseEnd: newValue[1]
     });
   };
 
@@ -136,14 +156,14 @@ const Home = () => {
       ...show,
       chapterStart: event.target.value,
       verseStart: 1,
-      verseEnd: 100,
+      verseEnd: 100
     });
   };
 
   const wordsChange = event => {
     changeShow({
       ...show,
-      words: event.target.value,
+      words: event.target.value
     });
   };
 
@@ -187,7 +207,7 @@ const Home = () => {
             label="Количество слов"
             type="number"
             InputLabelProps={{
-              shrink: true,
+              shrink: true
             }}
             margin="normal"
             value={words}
@@ -219,7 +239,7 @@ const Home = () => {
               if (useWordsCount) {
                 changeShow({
                   ...show,
-                  verseStart: verseEnd + 1,
+                  verseStart: verseEnd + 1
                 });
               }
             }}
@@ -244,6 +264,7 @@ const Home = () => {
       ) : (
         <Card>
           <CardContent>
+            <Typography variant="subtitle2"></Typography>
             {result.map((ch, chI) => (
               <div key={chI}>
                 <Typography variant="h4" key={`${chI}-глава`}>
