@@ -15,7 +15,7 @@ import {
   Button
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import { useState } from 'react';
+import { useState, Fragment } from 'react';
 
 import { useQuery } from '@apollo/react-hooks';
 import verseTime from '../lib/verseTime';
@@ -49,8 +49,7 @@ const Home = () => {
     purport: true,
     words: 1800,
     useWordsCount: 0,
-    textCount: 100,
-    result: []
+    textCount: 100
   });
 
   let {
@@ -64,8 +63,7 @@ const Home = () => {
     sanskrit,
     words,
     useWordsCount,
-    textCount,
-    result
+    textCount
   } = show;
 
   let {
@@ -74,27 +72,18 @@ const Home = () => {
     error: chapterError
   } = useQuery(SELECTED_TEXTS, {
     variables: {
-      chapter: chapterStart,
-      verseStart,
-      verseEnd,
-      purport,
-      wbw,
-      translation,
-      sanskrit,
-      footnote: true
+      chapter: chapterStart
     }
   });
 
-  if (
-    !chapterLoading &&
-    !chapterError &&
-    !isEqual(result, chapterData.chapters)
-  ) {
-    changeShow({
-      ...show,
-      result: [chapterData.chapters]
-    });
+  let result;
+  if (!(chapterLoading || chapterError)) {
+    result = chapterData.chapters;
+    result.texts = result.texts.filter(txt =>
+      txt.text.some(t => t >= verseStart && (verseEnd ? t <= verseEnd : true))
+    );
   }
+
   if (
     !chapterLoading &&
     !chapterError &&
@@ -259,92 +248,78 @@ const Home = () => {
           />
         </FormGroup>
       </FormControl>
-      {chapterLoading ? (
+      {chapterLoading && !result ? (
         'Вспоминаем'
       ) : (
         <Card>
           <CardContent>
             <Typography variant="subtitle2"></Typography>
-            {result.map((ch, chI) => (
-              <div key={chI}>
-                <Typography variant="h4" key={`${chI}-глава`}>
-                  Глава {ch.number} "{ch.name}"
+            <Typography variant="h4">
+              Глава {result.number} "{result.name}"
+            </Typography>
+            {result.texts.map((t, tI) => (
+              <Fragment key={`${tI}`}>
+                <Typography variant="h5" key={`${tI}`}>
+                  {' '}
+                  Текст {t.text.join('—')}
                 </Typography>
-                {ch.texts.map((t, tI) => (
-                  <div key={`${chI}${tI}`}>
-                    <Typography variant="h5" key={`${chI}${tI}`}>
-                      {' '}
-                      Текст {t.text.join('—')}
+                <Typography paragraph key={`${tI}sans`}>
+                  <strong>
+                    {sanskrit && t.sanskrit
+                      ? t.sanskrit.map((s, sI) => (
+                          <Fragment key={`${tI}${sI}`}>
+                            {s}
+                            {sI < s.length - 1 ? <br /> : ''}
+                          </Fragment>
+                        ))
+                      : ''}
+                  </strong>
+                </Typography>
+                {wbw ? (
+                  <Fragment key={`${tI}wbw`}>
+                    <Typography
+                      paragraph
+                      key={`${result.name}-пословный перевод`}
+                    >
+                      {t.wbw.map((wbw, wI) => (
+                        <Fragment key={`${tI}wbw${wI}`}>
+                          {' '}
+                          <strong>{wbw[0]}</strong> - {wbw[1]}
+                          {wI < t.wbw.length - 1 ? ';' : ''}
+                        </Fragment>
+                      ))}
                     </Typography>
-                    <Typography paragraph key={`${chI}${tI}sans`}>
-                      <strong>
-                        {sanskrit
-                          ? t.sanskrit.map((s, sI) => (
-                              <span key={`${chI}${tI}${sI}`}>
-                                {s}
-                                {sI < s.length - 1 ? <br /> : ''}
-                              </span>
-                            ))
-                          : ''}
-                      </strong>
+                  </Fragment>
+                ) : (
+                  ''
+                )}
+                {translation ? (
+                  <Fragment key={`${tI}tr`}>
+                    <Typography paragraph key={`${result.name}-перевод`}>
+                      <strong>{t.translation}</strong>
                     </Typography>
-                    {wbw ? (
-                      <div key={`${chI}${tI}wbw`}>
-                        <Typography
-                          paragraph
-                          key={`${ch.name}-пословный перевод`}
-                        >
-                          {t.wbw.map((wbw, wI) => (
-                            <span key={`${chI}${tI}wbw${wI}`}>
-                              {' '}
-                              <strong>{wbw[0]}</strong> - {wbw[1]}
-                              {wI < t.wbw.length - 1 ? ';' : ''}
-                            </span>
-                          ))}
+                  </Fragment>
+                ) : (
+                  ''
+                )}
+                {purport && t.purport ? (
+                  <>
+                    <Typography variant="h6" key={`${tI}-комменатарий`}>
+                      Комментарий
+                    </Typography>
+                    <>
+                      {t.purport.map((s, pI) => (
+                        <Typography paragraph key={`${tI}-комментарий-${pI}`}>
+                          {s}
                         </Typography>
-                      </div>
-                    ) : (
-                      ''
-                    )}
-                    {translation ? (
-                      <div key={`${chI}${tI}tr`}>
-                        <Typography paragraph key={`${ch.name}-перевод`}>
-                          <strong>{t.translation}</strong>
-                        </Typography>
-                      </div>
-                    ) : (
-                      ''
-                    )}
-                    {purport && t.purport ? (
-                      <>
-                        <Typography
-                          variant="h6"
-                          key={`${chI}${tI}-комменатарий`}
-                        >
-                          Комментарий
-                        </Typography>
-                        <>
-                          {t.purport.map((s, pI) => (
-                            <Typography
-                              paragraph
-                              key={`${chI}${tI}-комментарий-${pI}`}
-                            >
-                              {s}
-                            </Typography>
-                          ))}
-                          {t.footnote ? (
-                            <Typography>{t.footnote}</Typography>
-                          ) : (
-                            ''
-                          )}
-                        </>
-                      </>
-                    ) : (
-                      ''
-                    )}
-                  </div>
-                ))}
-              </div>
+                      ))}
+                      {t.footnote ? <Typography>{t.footnote}</Typography> : ''}
+                    </>
+                  </>
+                ) : (
+                  ''
+                )}
+              </Fragment>
             ))}
           </CardContent>
         </Card>

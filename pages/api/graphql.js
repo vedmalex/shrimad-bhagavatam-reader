@@ -1,5 +1,6 @@
 import { ApolloServer, gql } from 'apollo-server-micro';
-import SB from '../../lib/SB3.json';
+import SB from '../../lib/SB3-chapters.json';
+import SBTexts from '../../lib/SB3-texts.json';
 
 function getTextSize(t) {
   var sanskrit = 0;
@@ -41,15 +42,14 @@ function getTextSize(t) {
     translation,
     purport,
     footnote,
-    overall: sanskrit + wbw + translation + (purport || 0) + (footnote || 0),
+    overall: sanskrit + wbw + translation + (purport || 0) + (footnote || 0)
   };
 }
 
 const typeDefs = gql`
   type Query {
     chapters: [Chapter]
-    chaptersByInterval(filter: [ChapterFilter]): [Chapter]
-    chaptersByNum(num: Int, texts: Interval): Chapter
+    chaptersByNum(num: Int): Chapter
     chapterSize(num: Int!): ChapterSize
   }
 
@@ -86,13 +86,17 @@ const typeDefs = gql`
   }
 
   type Chapter {
+    id: String!
     name: String
     number: Int
-    texts: [Verse]
+    texts(Interval: Interval): [Verse]
     size: Int
   }
 
   type Verse {
+    id: String!
+    chapNo: Int
+    chapter: Chapter
     text: [Int!]
     name: String
     sanskrit: [String]
@@ -106,52 +110,49 @@ const typeDefs = gql`
 
 const resolvers = {
   Query: {
-    chaptersByNum(_, { num, texts }) {
-      let chapter = SB.find(ch => num === ch.number);
-
-      return {
-        ...chapter,
-        texts: texts
-          ? chapter.texts.filter(txt =>
-              txt.text.some(
-                t => t >= texts.start && (texts.end ? t <= texts.end : true),
-              ),
-            )
-          : chapter.texts,
-      };
+    chaptersByNum(_, { num }) {
+      return SB.find(ch => num === ch.number);
     },
     chapterSize(_, { num }) {
+      const texts = SBTexts.filter(t => num === t.chapter);
+      const last = texts[texts.length - 1];
+      const verse = last.text[last.text.length - 1];
       return {
         chapter: num,
-        verseCount: SB.find(ch => num === ch.number).texts.length,
+        verseCount: verse
       };
     },
     chapters() {
       return SB;
-    },
+    }
     // chaptersByInterval(_, { filter }) {
     //   return [...SB.filter(ch => num == ch.number)];
     // },
   },
   Chapter: {
+    id: item => `3.${item.number}`,
     size: root => {
       var last = root.texts[root.texts.length - 1];
       return last.text[last.text.length - 1];
     },
+    texts: root => SBTexts.filter(t => t.chapter == root.number)
   },
   Verse: {
+    id: item => `3.${item.chapter}.${item.name}`,
+    chapNo: root => root.chapter,
+    chapter: root => SB.find(ch => ch.number == root.chapter),
     wordsCount: verse => {
       return getTextSize(verse);
-    },
-  },
+    }
+  }
 };
 
 const apolloServer = new ApolloServer({ typeDefs, resolvers });
 
 export const config = {
   api: {
-    bodyParser: false,
-  },
+    bodyParser: false
+  }
 };
 
 export default apolloServer.createHandler({ path: '/api/graphql' });
