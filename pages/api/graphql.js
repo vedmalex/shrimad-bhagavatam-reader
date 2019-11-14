@@ -48,6 +48,7 @@ function getTextSize(t) {
 
 const typeDefs = gql`
   type Query {
+    env: String
     chapters: [Chapter]
     chaptersByNum(num: Int): Chapter
     chapterSize(num: Int!): ChapterSize
@@ -110,6 +111,7 @@ const typeDefs = gql`
 
 const resolvers = {
   Query: {
+    env: () => JSON.stringify(process.env),
     chaptersByNum(_, { num }) {
       return SB.find(ch => num === ch.number);
     },
