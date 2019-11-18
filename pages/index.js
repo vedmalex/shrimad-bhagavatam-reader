@@ -14,6 +14,7 @@ import {
   TextField,
   Button,
   Tooltip,
+  Link,
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import { useState, Fragment } from 'react';
@@ -37,6 +38,106 @@ const useStyles = makeStyles({
     marginBottom: 30,
   },
 });
+
+const ChapterTooltip = ({ chapter }) => (
+  <Fragment>
+    <Typography variant="h6">Статистика</Typography>
+    <Typography paragraph>
+      Слов в фрагменте <strong>{chapter.wordsCount}</strong>
+    </Typography>
+    <Typography paragraph>
+      Слов в показанном фрагменте <strong>{chapter.viewableWordsCount}</strong>
+    </Typography>
+  </Fragment>
+);
+
+const TextToolTip = ({ text, config }) => (
+  <Fragment>
+    <Typography variant="h5">Статистика</Typography>
+    <Typography paragraph>
+      Слов в фрагменте <strong>{text.wordsCount.overall}</strong>
+    </Typography>
+    <Typography paragraph>
+      Слов в показанном фрагменте{' '}
+      <strong>{verseTime(text.wordsCount, config)}</strong>
+    </Typography>
+  </Fragment>
+);
+
+const Text = ({ text, config }) => (
+  <Fragment>
+    <Tooltip title={<TextToolTip text={text} config={config} />}>
+      <Typography variant="h6"> Текст {text.text.join('—')}</Typography>
+    </Tooltip>
+    <Typography paragraph>
+      <strong>
+        {config.sanskrit && text.sanskrit
+          ? text.sanskrit.map((s, sI) => (
+              <Fragment key={`${sI}`}>
+                {s}
+                {sI < s.length - 1 ? <br /> : ''}
+              </Fragment>
+            ))
+          : ''}
+      </strong>
+    </Typography>
+    {config.wbw ? (
+      <Fragment>
+        <Typography paragraph>
+          {text.wbw.map((wbw, wI) => (
+            <Fragment key={`${wI}`}>
+              {' '}
+              <strong>{wbw[0]}</strong> - {wbw[1]}
+              {wI < text.wbw.length - 1 ? ';' : ''}
+            </Fragment>
+          ))}
+        </Typography>
+      </Fragment>
+    ) : (
+      ''
+    )}
+    {config.translation ? (
+      <Fragment>
+        <Typography paragraph>
+          <strong>{text.translation}</strong>
+        </Typography>
+      </Fragment>
+    ) : (
+      ''
+    )}
+    {config.purport && text.purport ? (
+      <Fragment>
+        <Typography variant="h6">Комментарий</Typography>
+        <Fragment>
+          {text.purport.map((s, pI) => (
+            <Typography paragraph key={`${pI}`}>
+              {s}
+            </Typography>
+          ))}
+          {text.footnote ? <Typography>{text.footnote}</Typography> : ''}
+        </Fragment>
+      </Fragment>
+    ) : (
+      ''
+    )}
+  </Fragment>
+);
+
+const Chapter = ({ result, config }) => (
+  <Card>
+    <CardContent>
+      <Typography variant="subtitle2"></Typography>
+      <Tooltip title={<ChapterTooltip chapter={result} />}>
+        <Typography variant="h4">
+          Глава {result.number} "{result.name}"
+        </Typography>
+      </Tooltip>
+      {result.texts.map((t, tI) => (
+        <Text key={tI} text={t} config={config} />
+      ))}
+    </CardContent>
+  </Card>
+);
 
 const Home = () => {
   const router = useRouter();
@@ -223,7 +324,7 @@ const Home = () => {
               label="Комментарии"
               onChange={change('purport')}
             />
-            <FormControlLabel
+            {/* <FormControlLabel
               checked={!!show.useWordsCount}
               control={<Checkbox color="primary" />}
               label="использовать количество слов"
@@ -239,7 +340,7 @@ const Home = () => {
               margin="normal"
               value={words}
               onChange={wordsChange}
-            />
+            /> */}
             <FormControl className={classes.formControl}>
               <InputLabel id="demo-simple-select-label">Глава</InputLabel>
               <Select
@@ -259,7 +360,7 @@ const Home = () => {
                 )}
               </Select>
             </FormControl>
-            <Button
+            {/* <Button
               variant="contained"
               color="primary"
               onClick={() => {
@@ -272,7 +373,16 @@ const Home = () => {
               }}
             >
               Следующий
-            </Button>
+            </Button> */}
+            <Link
+              href={`${
+                global.window ? window.location : '/'
+              }?chapter=${chapterStart}&start=${verseStart}&end=${verseEnd}&noconfig=1`}
+              target="_blank"
+            >
+              {' '}
+              Читать выбранное{' '}
+            </Link>
             <Slider
               className={classes.slider}
               valueLabelDisplay="auto"
@@ -292,116 +402,16 @@ const Home = () => {
       {chapterLoading && !result ? (
         'Вспоминаем'
       ) : (
-        <Card>
-          <CardContent>
-            <Typography variant="subtitle2"></Typography>
-            <Tooltip
-              title={
-                <Fragment>
-                  <Typography variant="h6">Статистика</Typography>
-                  <Typography paragraph>
-                    Слов в фрагменте <strong>{result.wordsCount}</strong>
-                  </Typography>
-                  <Typography paragraph>
-                    Слов в показанном фрагменте{' '}
-                    <strong>{result.viewableWordsCount}</strong>
-                  </Typography>
-                </Fragment>
-              }
-            >
-              <Typography variant="h4">
-                Глава {result.number} "{result.name}"
-              </Typography>
-            </Tooltip>
-            {result.texts.map((t, tI) => (
-              <Fragment key={`${tI}`}>
-                <Tooltip
-                  title={
-                    <Fragment>
-                      <Typography variant="h5">Статистика</Typography>
-                      <Typography paragraph>
-                        Слов в фрагменте <strong>{t.wordsCount.overall}</strong>
-                      </Typography>
-                      <Typography paragraph>
-                        Слов в показанном фрагменте{' '}
-                        <strong>
-                          {verseTime(t.wordsCount, {
-                            purport,
-                            wbw,
-                            translation,
-                            sanskrit,
-                            footnote: purport,
-                          })}
-                        </strong>
-                      </Typography>
-                    </Fragment>
-                  }
-                >
-                  <Typography variant="h6" key={`${tI}`}>
-                    {' '}
-                    Текст {t.text.join('—')}
-                  </Typography>
-                </Tooltip>
-                <Typography paragraph key={`${tI}sans`}>
-                  <strong>
-                    {sanskrit && t.sanskrit
-                      ? t.sanskrit.map((s, sI) => (
-                          <Fragment key={`${tI}${sI}`}>
-                            {s}
-                            {sI < s.length - 1 ? <br /> : ''}
-                          </Fragment>
-                        ))
-                      : ''}
-                  </strong>
-                </Typography>
-                {wbw ? (
-                  <Fragment key={`${tI}wbw`}>
-                    <Typography
-                      paragraph
-                      key={`${result.name}-пословный перевод`}
-                    >
-                      {t.wbw.map((wbw, wI) => (
-                        <Fragment key={`${tI}wbw${wI}`}>
-                          {' '}
-                          <strong>{wbw[0]}</strong> - {wbw[1]}
-                          {wI < t.wbw.length - 1 ? ';' : ''}
-                        </Fragment>
-                      ))}
-                    </Typography>
-                  </Fragment>
-                ) : (
-                  ''
-                )}
-                {translation ? (
-                  <Fragment key={`${tI}tr`}>
-                    <Typography paragraph key={`${result.name}-перевод`}>
-                      <strong>{t.translation}</strong>
-                    </Typography>
-                  </Fragment>
-                ) : (
-                  ''
-                )}
-                {purport && t.purport ? (
-                  <>
-                    <Typography variant="h6" key={`${tI}-комменатарий`}>
-                      Комментарий
-                    </Typography>
-                    <>
-                      {t.purport.map((s, pI) => (
-                        <Typography paragraph key={`${tI}-комментарий-${pI}`}>
-                          {s}
-                        </Typography>
-                      ))}
-                      {t.footnote ? <Typography>{t.footnote}</Typography> : ''}
-                    </>
-                  </>
-                ) : (
-                  ''
-                )}
-              </Fragment>
-            ))}
-          </CardContent>
-        </Card>
+        <Chapter
+          result={result}
+          config={{
+            purport,
+            wbw,
+            translation,
+            sanskrit,
+            footnote: purport,
+          }}
+        />
       )}
     </>
   );
