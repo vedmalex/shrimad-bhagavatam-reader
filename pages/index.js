@@ -16,6 +16,7 @@ import {
   Tooltip,
   Link,
 } from '@material-ui/core';
+import { OpenInNew } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/core/styles';
 import { useState, Fragment } from 'react';
 import { useRouter } from 'next/router';
@@ -200,7 +201,7 @@ const Configuration = ({ classes, show, changeShow }) => {
   return (
     <FormControl component="fieldset" className={classes.root}>
       <FormLabel component="legend">Что смотреть</FormLabel>
-      <FormGroup aria-label="position" column>
+      <FormGroup aria-label="position" row>
         <FormControlLabel
           checked={!!show.sanskrit}
           control={<Checkbox color="primary" />}
@@ -225,6 +226,16 @@ const Configuration = ({ classes, show, changeShow }) => {
           label="Комментарии"
           onChange={change('purport')}
         />
+        <Link
+          href={`${global.window ? window.location : '/'}?chapter=${
+            show.chapterStart
+          }&start=${show.verseStart}&end=${show.verseEnd}&noconfig=1`}
+          target="_blank"
+        >
+          <OpenInNew />
+        </Link>
+      </FormGroup>
+      <FormGroup aria-label="position" column>
         {/* <FormControlLabel
               checked={!!show.useWordsCount}
               control={<Checkbox color="primary" />}
@@ -286,15 +297,6 @@ const Configuration = ({ classes, show, changeShow }) => {
           min={1}
           max={show.textCount}
         />
-        <Link
-          href={`${global.window ? window.location : '/'}?chapter=${
-            show.chapterStart
-          }&start=${show.verseStart}&end=${show.verseEnd}&noconfig=1`}
-          target="_blank"
-        >
-          {' '}
-          Читать выбранное в отдельном окне{' '}
-        </Link>
       </FormGroup>
     </FormControl>
   );
