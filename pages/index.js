@@ -64,60 +64,75 @@ const TextToolTip = ({ text, config }) => (
   </Fragment>
 );
 
-const Text = ({ text, config }) => (
-  <Fragment>
-    <Tooltip title={<TextToolTip text={text} config={config} />}>
-      <Typography variant="h6"> Текст {text.text.join('—')}</Typography>
-    </Tooltip>
+const Sanskrit = ({ text, config }) =>
+  config.sanskrit && text.sanskrit ? (
     <Typography paragraph>
       <strong>
-        {config.sanskrit && text.sanskrit
-          ? text.sanskrit.map((s, sI) => (
-              <Fragment key={`${sI}`}>
-                {s}
-                {sI < s.length - 1 ? <br /> : ''}
-              </Fragment>
-            ))
-          : ''}
+        {text.sanskrit.map((s, sI) => (
+          <Fragment key={`${sI}`}>
+            {s}
+            {sI < s.length - 1 ? <br /> : ''}
+          </Fragment>
+        ))}
       </strong>
     </Typography>
-    {config.wbw ? (
-      <Fragment>
-        <Typography paragraph>
-          {text.wbw.map((wbw, wI) => (
-            <Fragment key={`${wI}`}>
-              {' '}
-              <strong>{wbw[0]}</strong> - {wbw[1]}
-              {wI < text.wbw.length - 1 ? ';' : ''}
-            </Fragment>
-          ))}
-        </Typography>
-      </Fragment>
-    ) : (
-      ''
-    )}
-    {config.translation ? (
-      <Fragment>
-        <Typography paragraph>
-          <strong>{text.translation}</strong>
-        </Typography>
-      </Fragment>
-    ) : (
-      ''
-    )}
-    {config.purport && text.purport ? (
-      <Fragment>
-        <Typography variant="h6">Комментарий</Typography>
-        {text.purport.map((s, pI) => (
-          <Typography paragraph key={`${pI}`}>
-            {s}
-          </Typography>
+  ) : (
+    ''
+  );
+
+const WordByWord = ({ text, config }) =>
+  config.wbw ? (
+    <Fragment>
+      <Typography paragraph>
+        {text.wbw.map((wbw, wI) => (
+          <Fragment key={`${wI}`}>
+            {' '}
+            <strong>{wbw[0]}</strong> - {wbw[1]}
+            {wI < text.wbw.length - 1 ? ';' : ''}
+          </Fragment>
         ))}
-        {text.footnote ? <Typography>{text.footnote}</Typography> : ''}
-      </Fragment>
-    ) : (
-      ''
-    )}
+      </Typography>
+    </Fragment>
+  ) : (
+    ''
+  );
+const Translation = ({ text, config }) =>
+  config.translation ? (
+    <Fragment>
+      <Typography paragraph>
+        <strong>{text.translation}</strong>
+      </Typography>
+    </Fragment>
+  ) : (
+    ''
+  );
+const Purport = ({ text, config }) =>
+  config.purport && text.purport ? (
+    <Fragment>
+      <Typography variant="h6">Комментарий</Typography>
+      {text.purport.map((s, pI) => (
+        <Typography paragraph key={`${pI}`}>
+          {s}
+        </Typography>
+      ))}
+      {text.footnote ? <Typography>{text.footnote}</Typography> : ''}
+    </Fragment>
+  ) : (
+    ''
+  );
+const TextHeader = ({ text, config }) => (
+  <Tooltip title={<TextToolTip text={text} config={config} />}>
+    <Typography variant="h6"> Текст {text.text.join('—')}</Typography>
+  </Tooltip>
+);
+
+const Text = ({ text, config }) => (
+  <Fragment>
+    <TextHeader text={text} config={config} />
+    <Sanskrit text={text} config={config} />
+    <WordByWord text={text} config={config} />
+    <Translation text={text} config={config} />
+    <Purport text={text} config={config} />
   </Fragment>
 );
 
@@ -136,6 +151,154 @@ const Chapter = ({ result, config }) => (
     </CardContent>
   </Card>
 );
+
+const Configuration = ({ classes, show, changeShow }) => {
+  const change = item => e => {
+    e.preventDefault();
+    changeShow({
+      ...show,
+      [item]: e.currentTarget.checked,
+    });
+  };
+
+  const changeVerses = (e, newValue) => {
+    e.preventDefault();
+    changeShow({
+      ...show,
+      verseStart: newValue[0],
+      verseEnd: newValue[1],
+    });
+  };
+
+  const changeChapter = event => {
+    changeShow({
+      ...show,
+      chapterStart: event.target.value,
+      verseStart: 1,
+      verseEnd: 100,
+    });
+  };
+
+  const wordsChange = event => {
+    changeShow({
+      ...show,
+      words: event.target.value,
+    });
+  };
+
+  let {
+    data: allChaptersData,
+    loading: allChapterLoading,
+    error: allChaptersError,
+  } = useQuery(ALL_CHAPTERS_QUERY);
+
+  let allChapters =
+    !allChapterLoading && !allChaptersError
+      ? allChaptersData.chapters
+      : undefined;
+
+  return (
+    <FormControl component="fieldset" className={classes.root}>
+      <FormLabel component="legend">Что смотреть</FormLabel>
+      <FormGroup aria-label="position" column>
+        <FormControlLabel
+          checked={!!show.sanskrit}
+          control={<Checkbox color="primary" />}
+          label="Санскрит"
+          onChange={change('sanskrit')}
+        />
+        <FormControlLabel
+          checked={!!show.wbw}
+          control={<Checkbox color="primary" />}
+          label="Пословный перевод"
+          onChange={change('wbw')}
+        />
+        <FormControlLabel
+          checked={!!show.translation}
+          control={<Checkbox color="primary" />}
+          label="Перевод"
+          onChange={change('translation')}
+        />
+        <FormControlLabel
+          checked={!!show.purport}
+          control={<Checkbox color="primary" />}
+          label="Комментарии"
+          onChange={change('purport')}
+        />
+        {/* <FormControlLabel
+              checked={!!show.useWordsCount}
+              control={<Checkbox color="primary" />}
+              label="использовать количество слов"
+              onChange={change('useWordsCount')}
+            />
+            <TextField
+              id="words count"
+              label="Количество слов"
+              type="number"
+              InputLabelProps={{
+                shrink: true,
+              }}
+              margin="normal"
+              value={words}
+              onChange={wordsChange}
+            /> */}
+        <FormControl className={classes.formControl}>
+          <InputLabel id="demo-simple-select-label">Глава</InputLabel>
+          <Select
+            labelId="demo-simple-select-label"
+            id="demo-simple-select"
+            value={show.chapterStart}
+            onChange={changeChapter}
+          >
+            {allChapterLoading ? (
+              <MenuItem value={show.chapterStart}>Глава</MenuItem>
+            ) : (
+              allChapters.map((ch, index) => (
+                <MenuItem key={index} value={ch.number}>
+                  {ch.number}. {ch.name}
+                </MenuItem>
+              ))
+            )}
+          </Select>
+        </FormControl>
+        {/* <Button
+              variant="contained"
+              color="primary"
+              onClick={() => {
+                if (useWordsCount) {
+                  changeShow({
+                    ...show,
+                    verseStart: verseEnd + 1,
+                  });
+                }
+              }}
+            >
+              Следующий
+            </Button> */}
+        <Slider
+          className={classes.slider}
+          valueLabelDisplay="auto"
+          aria-labelledby="range-slider"
+          value={[show.verseStart, show.verseEnd]}
+          label="Тексты"
+          valueLabelDisplay="on"
+          onChange={changeVerses}
+          min={1}
+          max={show.textCount}
+        />
+        <Link
+          href={`${global.window ? window.location : '/'}?chapter=${
+            show.chapterStart
+          }&start=${show.verseStart}&end=${show.verseEnd}&noconfig=1`}
+          target="_blank"
+        >
+          {' '}
+          Читать выбранное в отдельном окне{' '}
+        </Link>
+      </FormGroup>
+    </FormControl>
+  );
+};
 
 const Home = () => {
   const router = useRouter();
@@ -225,17 +388,6 @@ const Home = () => {
     });
   }
 
-  let {
-    data: allChaptersData,
-    loading: allChapterLoading,
-    error: allChaptersError,
-  } = useQuery(ALL_CHAPTERS_QUERY);
-
-  let allChapters =
-    !allChapterLoading && !allChaptersError
-      ? allChaptersData.chapters
-      : undefined;
-
   // let [allSizes, allSizesLoading] = useFetch(
   //   useWordsCount
   //     ? `/api/sizes?chapter=${chapterStart}&verse=${verseStart}&words=${words}`
@@ -253,39 +405,6 @@ const Home = () => {
   //   });
   // }
 
-  const change = item => e => {
-    e.preventDefault();
-    changeShow({
-      ...show,
-      [item]: e.currentTarget.checked,
-    });
-  };
-
-  const changeVerses = (e, newValue) => {
-    e.preventDefault();
-    changeShow({
-      ...show,
-      verseStart: newValue[0],
-      verseEnd: newValue[1],
-    });
-  };
-
-  const changeChapter = event => {
-    changeShow({
-      ...show,
-      chapterStart: event.target.value,
-      verseStart: 1,
-      verseEnd: 100,
-    });
-  };
-
-  const wordsChange = event => {
-    changeShow({
-      ...show,
-      words: event.target.value,
-    });
-  };
-
   return (
     <>
       <Head>
@@ -295,105 +414,7 @@ const Home = () => {
         </title>
       </Head>
       {!clean ? (
-        <FormControl component="fieldset" className={classes.root}>
-          <FormLabel component="legend">Что смотреть</FormLabel>
-          <FormGroup aria-label="position" row>
-            <FormControlLabel
-              checked={!!show.sanskrit}
-              control={<Checkbox color="primary" />}
-              label="Санскрит"
-              onChange={change('sanskrit')}
-            />
-            <FormControlLabel
-              checked={!!show.wbw}
-              control={<Checkbox color="primary" />}
-              label="Пословный перевод"
-              onChange={change('wbw')}
-            />
-            <FormControlLabel
-              checked={!!show.translation}
-              control={<Checkbox color="primary" />}
-              label="Перевод"
-              onChange={change('translation')}
-            />
-            <FormControlLabel
-              checked={!!show.purport}
-              control={<Checkbox color="primary" />}
-              label="Комментарии"
-              onChange={change('purport')}
-            />
-            {/* <FormControlLabel
-              checked={!!show.useWordsCount}
-              control={<Checkbox color="primary" />}
-              label="использовать количество слов"
-              onChange={change('useWordsCount')}
-            />
-            <TextField
-              id="words count"
-              label="Количество слов"
-              type="number"
-              InputLabelProps={{
-                shrink: true,
-              }}
-              margin="normal"
-              value={words}
-              onChange={wordsChange}
-            /> */}
-            <FormControl className={classes.formControl}>
-              <InputLabel id="demo-simple-select-label">Глава</InputLabel>
-              <Select
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
-                value={chapterStart}
-                onChange={changeChapter}
-              >
-                {allChapterLoading ? (
-                  <MenuItem value={chapterStart}>Глава</MenuItem>
-                ) : (
-                  allChapters.map((ch, index) => (
-                    <MenuItem key={index} value={ch.number}>
-                      {ch.number}. {ch.name}
-                    </MenuItem>
-                  ))
-                )}
-              </Select>
-            </FormControl>
-            {/* <Button
-              variant="contained"
-              color="primary"
-              onClick={() => {
-                if (useWordsCount) {
-                  changeShow({
-                    ...show,
-                    verseStart: verseEnd + 1,
-                  });
-                }
-              }}
-            >
-              Следующий
-            </Button> */}
-            <Link
-              href={`${
-                global.window ? window.location : '/'
-              }?chapter=${chapterStart}&start=${verseStart}&end=${verseEnd}&noconfig=1`}
-              target="_blank"
-            >
-              {' '}
-              Читать выбранное{' '}
-            </Link>
-            <Slider
-              className={classes.slider}
-              valueLabelDisplay="auto"
-              aria-labelledby="range-slider"
-              value={[show.verseStart, show.verseEnd]}
-              label="Тексты"
-              valueLabelDisplay="on"
-              onChange={changeVerses}
-              min={1}
-              max={textCount}
-            />
-          </FormGroup>
-        </FormControl>
+        <Configuration classes={classes} show={show} changeShow={changeShow} />
       ) : (
         undefined
       )}
