@@ -6,7 +6,7 @@ import { converter, mapper, transliterations } from 'convert-sanskrit-to-rus';
 
 var replacer = mapper(
   [transliterations.Unicode.index],
-  transliterations.XK.index,
+  transliterations.XK.index
 );
 
 var translite = converter(replacer);
@@ -14,13 +14,14 @@ var translite = converter(replacer);
 const useStyles = makeStyles({
   highlight: {
     backgroundColor: 'yellow',
-    fontStyle: 'italic',
-  },
+    fontStyle: 'italic'
+  }
 });
 
 const Word = ({ children, found, classes }) => {
+  debugger;
   const sample = translite(children);
-  if (found.test(sample)) {
+  if (sample.match(found)) {
     return <span className={classes.highlight}>{children} </span>;
   } else {
     return <>{children} </>;
@@ -112,7 +113,7 @@ export const SearchText = ({ text }) => {
     translation: false,
     purport: false,
     sanskrit: false,
-    footnotes: false,
+    footnotes: false
   };
 
   const classes = useStyles();
