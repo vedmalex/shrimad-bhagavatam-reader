@@ -60,7 +60,7 @@ const typeDefs = gql`
   scalar JSONObject
 
   type Query {
-    search(text: String!): [VerseSearch]
+    search(text: String): [VerseSearch]
     chapters: [Chapter]
     chaptersByNum(num: Int): Chapter
     chapterSize(num: Int!): ChapterSize
@@ -157,11 +157,15 @@ const resolvers = {
       return SB;
     },
     search(_, { text }) {
-      return idx.search(text).map(res => ({
-        ...sbIndexResults[res.ref],
-        score: res.score,
-        metadata: res.matchData,
-      }));
+      if (text) {
+        return idx.search(text).map(res => ({
+          ...sbIndexResults[res.ref],
+          score: res.score,
+          metadata: res.matchData.metadata,
+        }));
+      } else {
+        return [];
+      }
     },
     // chaptersByInterval(_, { filter }) {
     //   return [...SB.filter(ch => num == ch.number)];
