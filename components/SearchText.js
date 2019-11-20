@@ -6,7 +6,7 @@ import { converter, mapper, transliterations } from 'convert-sanskrit-to-rus';
 
 var replacer = mapper(
   [transliterations.Unicode.index],
-  transliterations.XK.index
+  transliterations.XK.index,
 );
 
 var translite = converter(replacer);
@@ -14,35 +14,38 @@ var translite = converter(replacer);
 const useStyles = makeStyles({
   highlight: {
     backgroundColor: 'yellow',
-    fontStyle: 'italic'
-  }
+    fontStyle: 'italic',
+  },
 });
 
 const Word = ({ children, found, classes }) => {
-  debugger;
-  const sample = translite(children);
-  if (sample.match(found)) {
-    return <span className={classes.highlight}>{children} </span>;
+  const list = children.split(' ');
+  if (list.length > 1) {
+    return list.map((item, i) => (
+      <Word key={i} found={found} classes={classes}>
+        {item}
+      </Word>
+    ));
   } else {
-    return <>{children} </>;
+    const sample = translite(children);
+    if (sample.match(found)) {
+      return <span className={classes.highlight}>{children} </span>;
+    } else {
+      return <>{children} </>;
+    }
   }
 };
 
 const Sanskrit = ({ text, config, found, classes }) => {
   if (config.sanskrit && text.sanskrit) {
-    const result = text.sanskrit.map(line => {
-      return line.split(' ');
-    });
     return (
       <Typography paragraph>
         <strong>
-          {result.map((s, sI) => (
+          {text.sanskrit.map((s, sI) => (
             <Fragment key={`${sI}`}>
-              {s.map((w, i) => (
-                <Word key={i} found={found} classes={classes}>
-                  {w}
-                </Word>
-              ))}
+              <Word key={sI} found={found} classes={classes}>
+                {s}
+              </Word>
               <br />
             </Fragment>
           ))}
@@ -64,7 +67,10 @@ export const WordByWord = ({ text, config, found, classes }) => {
                   {wbw[0]}
                 </Word>
               </strong>{' '}
-              - {wbw[1]}
+              -{' '}
+              <Word key={wI} found={found} classes={classes}>
+                {wbw[1]}
+              </Word>
               {wI < text.wbw.length - 1 ? ';' : ''}
             </Fragment>
           ))}
@@ -79,7 +85,11 @@ export const Translation = ({ text, config, found, classes }) =>
   config.translation ? (
     <Fragment>
       <Typography paragraph>
-        <strong>{text.translation}</strong>
+        <strong>
+          <Word found={found} classes={classes}>
+            {text.translation}
+          </Word>
+        </strong>
       </Typography>
     </Fragment>
   ) : (
@@ -91,7 +101,9 @@ export const Purport = ({ text, config, found, classes }) =>
       <Typography variant="h6">Комментарий</Typography>
       {text.purport.map((s, pI) => (
         <Typography paragraph key={`${pI}`}>
-          {s}
+          <Word key={pI} found={found} classes={classes}>
+            {s}
+          </Word>
         </Typography>
       ))}
       {text.footnote ? <Typography>{text.footnote}</Typography> : ''}
@@ -113,7 +125,7 @@ export const SearchText = ({ text }) => {
     translation: false,
     purport: false,
     sanskrit: false,
-    footnotes: false
+    footnotes: false,
   };
 
   const classes = useStyles();

@@ -57,11 +57,12 @@ const Result = ({ query }) => {
           count={count || 0}
           rowsPerPage={limit}
           page={page}
+          labelRowsPerPage={'шлок на странице'}
           backIconButtonProps={{
-            'aria-label': 'previous page',
+            'aria-label': 'предыдущая',
           }}
           nextIconButtonProps={{
-            'aria-label': 'next page',
+            'aria-label': 'следующая',
           }}
           onChangePage={(e, page) => setPage(page)}
           onChangeRowsPerPage={event => {
@@ -125,8 +126,8 @@ const SearchPanel = ({ search, setSearch, setQuery, classes }) => (
 
 export default () => {
   const classes = useStyles();
-  const [query, setQuery] = useState('');
-  const [search, setSearch] = useState('');
+  const [query, setQuery] = useState('Уддхава увача сказал');
+  const [search, setSearch] = useState('Уддхава увача сказал');
 
   return (
     <Fragment>
