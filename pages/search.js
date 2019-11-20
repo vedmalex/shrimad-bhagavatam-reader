@@ -6,7 +6,7 @@ import {
   Typography,
   Card,
   CardContent,
-  TablePagination,
+  TablePagination
 } from '@material-ui/core';
 import { useState, Fragment, useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
@@ -19,12 +19,12 @@ const useStyles = makeStyles({
     margin: 10,
     display: 'flex',
     flexWrap: 'wrap',
-    flexDirection: 'row',
+    flexDirection: 'row'
   },
   slider: {
     marginTop: 30,
-    marginBottom: 30,
-  },
+    marginBottom: 30
+  }
 });
 
 const Result = ({ query }) => {
@@ -35,8 +35,8 @@ const Result = ({ query }) => {
     variables: {
       text: query,
       limit,
-      from: page * limit,
-    },
+      from: page * limit
+    }
   });
 
   useEffect(() => {
@@ -59,10 +59,10 @@ const Result = ({ query }) => {
           page={page}
           labelRowsPerPage={'шлок на странице'}
           backIconButtonProps={{
-            'aria-label': 'предыдущая',
+            'aria-label': 'предыдущая'
           }}
           nextIconButtonProps={{
-            'aria-label': 'следующая',
+            'aria-label': 'следующая'
           }}
           onChangePage={(e, page) => setPage(page)}
           onChangeRowsPerPage={event => {
@@ -87,7 +87,7 @@ const Result = ({ query }) => {
                   wbw: true,
                   purport: true,
                   footnote: true,
-                  sanskrit: true,
+                  sanskrit: true
                 }}
               />
             ))}
@@ -126,8 +126,8 @@ const SearchPanel = ({ search, setSearch, setQuery, classes }) => (
 
 export default () => {
   const classes = useStyles();
-  const [query, setQuery] = useState('Уддхава увача сказал');
-  const [search, setSearch] = useState('Уддхава увача сказал');
+  const [query, setQuery] = useState('');
+  const [search, setSearch] = useState('');
 
   return (
     <Fragment>

@@ -8,9 +8,9 @@ import {
   Select,
   InputLabel,
   MenuItem,
-  Link,
+  Link
 } from '@material-ui/core';
-import { OpenInNew } from '@material-ui/icons';
+import { OpenInNew, Search } from '@material-ui/icons';
 import { useQuery } from '@apollo/react-hooks';
 import { ALL_CHAPTERS_QUERY } from '../lib/queries';
 export const Configuration = ({ classes, show, changeShow }) => {
@@ -18,7 +18,7 @@ export const Configuration = ({ classes, show, changeShow }) => {
     e.preventDefault();
     changeShow({
       ...show,
-      [item]: e.currentTarget.checked,
+      [item]: e.currentTarget.checked
     });
   };
   const changeVerses = (e, newValue) => {
@@ -26,7 +26,7 @@ export const Configuration = ({ classes, show, changeShow }) => {
     changeShow({
       ...show,
       verseStart: newValue[0],
-      verseEnd: newValue[1],
+      verseEnd: newValue[1]
     });
   };
   const changeChapter = event => {
@@ -34,19 +34,19 @@ export const Configuration = ({ classes, show, changeShow }) => {
       ...show,
       chapterStart: event.target.value,
       verseStart: 1,
-      verseEnd: 100,
+      verseEnd: 100
     });
   };
   const wordsChange = event => {
     changeShow({
       ...show,
-      words: event.target.value,
+      words: event.target.value
     });
   };
   let {
     data: allChaptersData,
     loading: allChapterLoading,
-    error: allChaptersError,
+    error: allChaptersError
   } = useQuery(ALL_CHAPTERS_QUERY);
   let allChapters =
     !allChapterLoading && !allChaptersError
@@ -87,6 +87,9 @@ export const Configuration = ({ classes, show, changeShow }) => {
           target="_blank"
         >
           <OpenInNew />
+        </Link>
+        <Link href={`/search`} target="_blank">
+          <Search />
         </Link>
       </FormGroup>
       <FormGroup aria-label="position" column>
