@@ -5,9 +5,10 @@ import {
   TextField,
   Typography,
   Card,
-  CardContent
+  CardContent,
+  TablePagination,
 } from '@material-ui/core';
-import { useState, Fragment } from 'react';
+import { useState, Fragment, useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { useQuery } from '@apollo/react-hooks';
 import { SEARCH_VERSE } from '../lib/queries';
@@ -18,34 +19,65 @@ const useStyles = makeStyles({
     margin: 10,
     display: 'flex',
     flexWrap: 'wrap',
-    flexDirection: 'row'
+    flexDirection: 'row',
   },
   slider: {
     marginTop: 30,
-    marginBottom: 30
-  }
+    marginBottom: 30,
+  },
 });
 
 const Result = ({ query }) => {
+  const [page, setPage] = useState(0);
+  const [limit, setLimit] = useState(3);
+  const [count, setCount] = useState(0);
   let { data, loading, error } = useQuery(SEARCH_VERSE, {
     variables: {
-      text: query
-    }
+      text: query,
+      limit,
+      from: page * limit,
+    },
   });
-  console.log(data);
+
+  useEffect(() => {
+    if (data) {
+      setCount(data.search.count);
+    } else {
+      setCount(0);
+    }
+  }, [data]);
+  // console.log(data);
 
   return (
     <Card>
       <CardContent>
-        {!loading && !error && data.search.length > 0 ? (
+        <TablePagination
+          rowsPerPageOptions={[1, 3, 5, 10, 25, 50]}
+          component="div"
+          count={count || 0}
+          rowsPerPage={limit}
+          page={page}
+          backIconButtonProps={{
+            'aria-label': 'previous page',
+          }}
+          nextIconButtonProps={{
+            'aria-label': 'next page',
+          }}
+          onChangePage={(e, page) => setPage(page)}
+          onChangeRowsPerPage={event => {
+            setLimit(parseInt(event.target.value, 10));
+            setPage(0);
+          }}
+        />
+        {!loading && !error && data.search.count > 0 ? (
           <Fragment>
             <Typography variant="body2">
               <sub>
                 найдено текстов:
-                {data.search.length}
+                {count}
               </sub>
             </Typography>
-            {data.search.map((t, tI) => (
+            {data.search.data.map((t, tI) => (
               <SearchText
                 key={tI}
                 text={t}
@@ -54,7 +86,7 @@ const Result = ({ query }) => {
                   wbw: true,
                   purport: true,
                   footnote: true,
-                  sanskrit: true
+                  sanskrit: true,
                 }}
               />
             ))}
@@ -71,40 +103,40 @@ const Result = ({ query }) => {
   );
 };
 
+const SearchPanel = ({ search, setSearch, setQuery, classes }) => (
+  <FormControl component="fieldset" className={classes.root}>
+    <FormLabel component="legend">Поиск по третьей песне</FormLabel>
+    <FormGroup aria-label="position">
+      <FormControl className={classes.formControl}>
+        <TextField
+          value={search}
+          label="запрос"
+          onChange={e => setSearch(e.target.value)}
+          onKeyUp={event => {
+            if (event.keyCode == 13) {
+              setQuery(search);
+            }
+          }}
+        />
+      </FormControl>
+    </FormGroup>
+  </FormControl>
+);
+
 export default () => {
   const classes = useStyles();
-  const [state, update] = useState({ query: '', editing: '' });
-  const updateQuery = e => {
-    e.preventDefault();
-    update({
-      ...state,
-      editing: e.target.value
-    });
-  };
+  const [query, setQuery] = useState('');
+  const [search, setSearch] = useState('');
 
   return (
     <Fragment>
-      <FormControl component="fieldset" className={classes.root}>
-        <FormLabel component="legend">Поиск по третьей песне</FormLabel>
-        <FormGroup aria-label="position">
-          <FormControl className={classes.formControl}>
-            <TextField
-              value={state.editing}
-              label="запрос"
-              onChange={updateQuery}
-              onKeyUp={event => {
-                if (event.keyCode == 13) {
-                  update({
-                    ...state,
-                    query: state.editing
-                  });
-                }
-              }}
-            />
-          </FormControl>
-        </FormGroup>
-      </FormControl>
-      <Result query={state.query} />
+      <SearchPanel
+        search={search}
+        setSearch={setSearch}
+        setQuery={setQuery}
+        classes={classes}
+      />
+      <Result query={query} />
     </Fragment>
   );
 };

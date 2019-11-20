@@ -60,7 +60,7 @@ const typeDefs = gql`
   scalar JSONObject
 
   type Query {
-    search(text: String): [VerseSearch]
+    search(text: String, from: Int, limit: Int): SearchResult
     chapters: [Chapter]
     chaptersByNum(num: Int): Chapter
     chapterSize(num: Int!): ChapterSize
@@ -119,6 +119,14 @@ const typeDefs = gql`
     footnote: String
     wordsCount: verseSize
   }
+
+  type SearchResult {
+    data: [VerseSearch]
+    count: Int
+    page: Int
+    hasNext: Boolean
+  }
+
   type VerseSearch {
     score: Float
     metadata: JSON
@@ -156,13 +164,25 @@ const resolvers = {
     chapters() {
       return SB;
     },
-    search(_, { text }) {
+    search(_, { text, from, limit }) {
       if (text) {
-        return idx.search(text).map(res => ({
-          ...sbIndexResults[res.ref],
-          score: res.score,
-          metadata: res.matchData.metadata,
-        }));
+        let res = idx.search(text);
+        const count = res.length;
+        if (!isNaN(from) || !isNaN(limit)) {
+          from = from || 0;
+          limit = limit || 10;
+          res = res.slice(from, from + limit);
+        }
+        return {
+          count,
+          page: !isNaN(from) || !isNaN(limit) ? from / limit + 1 : 0,
+          hasNext: from + limit < count,
+          data: res.map(res => ({
+            ...sbIndexResults[res.ref],
+            score: res.score,
+            metadata: res.matchData.metadata,
+          })),
+        };
       } else {
         return [];
       }
