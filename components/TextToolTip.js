@@ -1,4 +1,4 @@
-import { Typography } from '@material-ui/core';
+import Typography from '@material-ui/core/Typography';
 import { Fragment } from 'react';
 import verseTime from '../lib/verseTime';
 export const TextToolTip = ({ text, config }) =>

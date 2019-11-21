@@ -1,7 +1,9 @@
-import { Typography, Link } from '@material-ui/core';
+import Typography from '@material-ui/core/Typography';
+import Link from '@material-ui/core/Link';
 import { Fragment } from 'react';
-import { forEach, keys } from 'lodash';
-import { makeStyles } from '@material-ui/core/styles';
+import forEach from 'lodash/forEach';
+import keys from 'lodash/keys';
+import makeStyles from '@material-ui/core/styles/makeStyles';
 import translite from '../lib/transilte';
 
 const useStyles = makeStyles({

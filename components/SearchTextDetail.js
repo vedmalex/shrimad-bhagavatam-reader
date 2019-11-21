@@ -1,4 +1,5 @@
-import { Card, CardContent } from '@material-ui/core';
+import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
 import { useQuery } from '@apollo/react-hooks';
 import { SEARCH_VERSE_DETAIL } from '../lib/queries';
 import { SearchText } from './SearchText';

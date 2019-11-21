@@ -1,4 +1,8 @@
-import { Typography, Card, CardContent, Tooltip } from '@material-ui/core';
+import Typography from '@material-ui/core/Typography';
+import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
+import Tooltip from '@material-ui/core/Tooltip';
+
 import { ChapterTooltip } from './ChapterTooltip';
 import { Text } from './Text';
 export const Chapter = ({ result, config }) => (

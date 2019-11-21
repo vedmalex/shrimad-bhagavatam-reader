@@ -1,4 +1,6 @@
-import { Typography, Link } from '@material-ui/core';
+import Typography from '@material-ui/core/Typography';
+import Link from '@material-ui/core/Link';
+
 import { Fragment } from 'react';
 
 import translite from '../lib/transilte';
