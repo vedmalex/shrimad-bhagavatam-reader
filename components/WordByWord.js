@@ -1,5 +1,8 @@
-import { Typography } from '@material-ui/core';
+import { Typography, Link } from '@material-ui/core';
 import { Fragment } from 'react';
+
+import translite from '../lib/transilte';
+
 export const WordByWord = ({ text, config }) =>
   config.wbw ? (
     <Fragment>
@@ -7,7 +10,10 @@ export const WordByWord = ({ text, config }) =>
         {text.wbw.map((wbw, wI) => (
           <Fragment key={`${wI}`}>
             {' '}
-            <strong>{wbw[0]}</strong> - {wbw[1]}
+            <strong>
+              <Link href={`/search?q=${translite(wbw[0])}`}>{wbw[0]}</Link>
+            </strong>{' '}
+            - {wbw[1]}
             {wI < text.wbw.length - 1 ? ';' : ''}
           </Fragment>
         ))}

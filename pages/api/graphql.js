@@ -61,6 +61,7 @@ const typeDefs = gql`
 
   type Query {
     search(text: String, from: Int, limit: Int): SearchResult
+    verse(number: String): Verse
     chapters: [Chapter]
     chaptersByNum(num: Int): Chapter
     chapterSize(num: Int!): ChapterSize
@@ -186,6 +187,9 @@ const resolvers = {
       } else {
         return [];
       }
+    },
+    verse(_, { number }) {
+      return sbIndexResults[number];
     },
     // chaptersByInterval(_, { filter }) {
     //   return [...SB.filter(ch => num == ch.number)];

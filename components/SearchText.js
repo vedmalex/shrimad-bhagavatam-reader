@@ -1,15 +1,8 @@
-import { Typography } from '@material-ui/core';
+import { Typography, Link } from '@material-ui/core';
 import { Fragment } from 'react';
 import { forEach, keys } from 'lodash';
 import { makeStyles } from '@material-ui/core/styles';
-import { converter, mapper, transliterations } from 'convert-sanskrit-to-rus';
-
-var replacer = mapper(
-  [transliterations.Unicode.index],
-  transliterations.XK.index,
-);
-
-var translite = converter(replacer);
+import translite from '../lib/transilte';
 
 const useStyles = makeStyles({
   highlight: {
@@ -28,7 +21,7 @@ const Word = ({ children, found, classes }) => {
     ));
   } else {
     const sample = translite(children);
-    if (sample.match(found)) {
+    if (found && sample.match(found)) {
       return <span className={classes.highlight}>{children} </span>;
     } else {
       return <>{children} </>;
@@ -116,7 +109,10 @@ export const TextHeader = ({ text, config, found, classes }) => (
     <Typography variant="body2">
       <sup>результативность {text.score}</sup>
     </Typography>
-    <Typography variant="h6"> Текст {text.id}</Typography>
+    <Typography variant="h6">
+      {' '}
+      <Link href={`/search/${text.id}`}>Текст {text.id}</Link>
+    </Typography>
   </>
 );
 export const SearchText = ({ text }) => {
@@ -129,7 +125,9 @@ export const SearchText = ({ text }) => {
   };
 
   const classes = useStyles();
-  const found = RegExp(keys(text.metadata).join('|'), 'ig');
+  const found = text.metadata
+    ? RegExp(keys(text.metadata).join('|'), 'ig')
+    : null;
 
   forEach(text.metadata, word => {
     forEach(keys(word), item => {

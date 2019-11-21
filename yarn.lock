@@ -2346,10 +2346,10 @@ convert-css-length@^2.0.1:
   resolved "https://registry.yarnpkg.com/convert-css-length/-/convert-css-length-2.0.1.tgz#90a76bde5bfd24d72881a5b45d02249b2c1d257c"
   integrity sha512-iGpbcvhLPRKUbBc0Quxx7w/bV14AC3ItuBEGMahA5WTYqB8lq9jH0kTXFheCBASsYnqeMFZhiTruNxr1N59Axg==
 
-convert-sanskrit-to-rus@^1.0.0-beta.10:
-  version "1.0.0-beta.10"
-  resolved "https://registry.yarnpkg.com/convert-sanskrit-to-rus/-/convert-sanskrit-to-rus-1.0.0-beta.10.tgz#97beb0d400cc03cc7d267d31747c088938c95fb0"
-  integrity sha512-8p/LCiOwKFRduVmTnj9pAS2Q2h2bN1cL83MSUfneZ4mXWRGWMTg6aWqnGNutJRryIWDcLCX6fdnTp33uWoNT+w==
+convert-sanskrit-to-rus@^1.0.0-beta.13:
+  version "1.0.0-beta.13"
+  resolved "https://registry.yarnpkg.com/convert-sanskrit-to-rus/-/convert-sanskrit-to-rus-1.0.0-beta.13.tgz#1588c7c55c9ff814823dea365783e195bf98faa4"
+  integrity sha512-oeE8rf1PjlI2Buf9/b78GgW8Oflj1YqY7ogVgQMSYpyxaiM+tCYOozWjSQ8WmbjaKYyCCKc4UzqjcNqe9q1/Ww==
   dependencies:
     lodash "^4.17.15"
 

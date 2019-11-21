@@ -3,7 +3,7 @@ import orderBy from 'lodash/orderBy';
 
 export default (req, res) => {
   const {
-    query: { n, start, end }
+    query: { n, start, end },
   } = req;
   if (n) {
     const chapNo = Array.isArray(n)
@@ -13,12 +13,12 @@ export default (req, res) => {
       if (Array.isArray(chapNo)) {
         let chapter = SB.filter(ch => chapNo.indexOf(ch.number) > -1);
         res.setHeader('Cache-Control', 'public, max-age=31557600');
-        console.log('1', chapter);
+        // console.log('1', chapter);
         res.json(orderBy(chapter, ['index'], ['asc']));
       } else {
         let chapter = SB.find(ch => chapNo === ch.number);
         res.setHeader('Cache-Control', 'public, max-age=31557600');
-        console.log('2', chapter);
+        // console.log('2', chapter);
         res.json(chapter);
       }
     } else {
