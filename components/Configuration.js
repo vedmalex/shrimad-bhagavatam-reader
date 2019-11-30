@@ -18,7 +18,7 @@ export const Configuration = ({ classes, show, changeShow }) => {
     e.preventDefault();
     changeShow({
       ...show,
-      [item]: e.currentTarget.checked,
+      [item]: e.currentTarget.checked
     });
   };
   const changeVerses = (e, newValue) => {
@@ -26,7 +26,7 @@ export const Configuration = ({ classes, show, changeShow }) => {
     changeShow({
       ...show,
       verseStart: newValue[0],
-      verseEnd: newValue[1],
+      verseEnd: newValue[1]
     });
   };
   const changeChapter = event => {
@@ -34,19 +34,19 @@ export const Configuration = ({ classes, show, changeShow }) => {
       ...show,
       chapterStart: event.target.value,
       verseStart: 1,
-      verseEnd: 100,
+      verseEnd: 100
     });
   };
   const wordsChange = event => {
     changeShow({
       ...show,
-      words: event.target.value,
+      words: event.target.value
     });
   };
   let {
     data: allChaptersData,
     loading: allChapterLoading,
-    error: allChaptersError,
+    error: allChaptersError
   } = useQuery(ALL_CHAPTERS_QUERY);
   let allChapters =
     !allChapterLoading && !allChaptersError
@@ -83,7 +83,9 @@ export const Configuration = ({ classes, show, changeShow }) => {
         <Link
           href={`${global.window ? window.location : '/'}?chapter=${
             show.chapterStart
-          }&start=${show.verseStart}&end=${show.verseEnd}&noconfig=1`}
+          }&start=${show.verseStart}&end=${show.verseEnd}&noconfig=1&purp=${
+            show.purport ? 1 : 0
+          }&sans=${show.sanskrit ? 1 : 0}&w2w=${show.wbw ? 1 : 0}`}
           target="_blank"
         >
           <OpenInNew />
