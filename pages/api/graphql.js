@@ -51,7 +51,7 @@ function getTextSize(t) {
     translation,
     purport,
     footnote,
-    overall: sanskrit + wbw + translation + (purport || 0) + (footnote || 0),
+    overall: sanskrit + wbw + translation + (purport || 0) + (footnote || 0)
   };
 }
 
@@ -117,7 +117,7 @@ const typeDefs = gql`
     wbw: [[String]]
     translation: String
     purport: [String]
-    footnote: String
+    footnote: [String]
     wordsCount: verseSize
   }
 
@@ -159,7 +159,7 @@ const resolvers = {
       const verse = last.text[last.text.length - 1];
       return {
         chapter: num,
-        verseCount: verse,
+        verseCount: verse
       };
     },
     chapters() {
@@ -181,8 +181,8 @@ const resolvers = {
           data: res.map(res => ({
             ...sbIndexResults[res.ref],
             score: res.score,
-            metadata: res.matchData.metadata,
-          })),
+            metadata: res.matchData.metadata
+          }))
         };
       } else {
         return [];
@@ -190,7 +190,7 @@ const resolvers = {
     },
     verse(_, { number }) {
       return sbIndexResults[number];
-    },
+    }
     // chaptersByInterval(_, { filter }) {
     //   return [...SB.filter(ch => num == ch.number)];
     // },
@@ -201,7 +201,7 @@ const resolvers = {
       var last = root.texts[root.texts.length - 1];
       return last.text[last.text.length - 1];
     },
-    texts: root => SBTexts.filter(t => t.chapter == root.number),
+    texts: root => SBTexts.filter(t => t.chapter == root.number)
   },
   Verse: {
     id: item => `3.${item.chapter}.${item.name}`,
@@ -209,16 +209,16 @@ const resolvers = {
     chapter: root => SB.find(ch => ch.number == root.chapter),
     wordsCount: verse => {
       return getTextSize(verse);
-    },
-  },
+    }
+  }
 };
 
 const apolloServer = new ApolloServer({ typeDefs, resolvers });
 
 export const config = {
   api: {
-    bodyParser: false,
-  },
+    bodyParser: false
+  }
 };
 
 export default apolloServer.createHandler({ path: '/api/graphql' });
