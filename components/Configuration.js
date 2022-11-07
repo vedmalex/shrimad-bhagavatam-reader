@@ -14,11 +14,11 @@ import Search from '@material-ui/icons/Search';
 import { useQuery } from '@apollo/react-hooks';
 import { ALL_CHAPTERS_QUERY } from '../lib/queries';
 export const Configuration = ({ classes, show, changeShow }) => {
-  const change = item => e => {
+  const change = (item) => (e) => {
     e.preventDefault();
     changeShow({
       ...show,
-      [item]: e.currentTarget.checked
+      [item]: e.currentTarget.checked,
     });
   };
   const changeVerses = (e, newValue) => {
@@ -26,27 +26,27 @@ export const Configuration = ({ classes, show, changeShow }) => {
     changeShow({
       ...show,
       verseStart: newValue[0],
-      verseEnd: newValue[1]
+      verseEnd: newValue[1],
     });
   };
-  const changeChapter = event => {
+  const changeChapter = (event) => {
     changeShow({
       ...show,
       chapterStart: event.target.value,
       verseStart: 1,
-      verseEnd: 100
+      verseEnd: 100,
     });
   };
-  const wordsChange = event => {
+  const wordsChange = (event) => {
     changeShow({
       ...show,
-      words: event.target.value
+      words: event.target.value,
     });
   };
   let {
     data: allChaptersData,
     loading: allChapterLoading,
-    error: allChaptersError
+    error: allChaptersError,
   } = useQuery(ALL_CHAPTERS_QUERY);
   let allChapters =
     !allChapterLoading && !allChaptersError
@@ -117,7 +117,6 @@ export const Configuration = ({ classes, show, changeShow }) => {
 
         <Slider
           className={classes.slider}
-          valueLabelDisplay="auto"
           aria-labelledby="range-slider"
           value={[show.verseStart, show.verseEnd]}
           label="Тексты"

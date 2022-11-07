@@ -25,16 +25,8 @@ const useStyles = makeStyles({
 
 const Home = () => {
   const router = useRouter();
-  const {
-    chapter,
-    start,
-    end,
-    noconfig,
-    sans,
-    w2w,
-    purp,
-    trans,
-  } = router.query;
+  const { chapter, start, end, noconfig, sans, w2w, purp, trans } =
+    router.query;
   let classes = useStyles();
   const [show, changeShow] = useState({
     chapterStart: chapter ? parseInt(chapter, 10) : 1,
@@ -46,7 +38,7 @@ const Home = () => {
     translation: trans ? !!parseInt(trans, 10) : true,
     purport: purp ? !!parseInt(purp, 10) : true,
     words: 1800,
-    useWordsCount: 0,
+    useWordsCount: 1,
     textCount: 100,
     clean: noconfig ? !!parseInt(noconfig, 10) : false,
     originalData: undefined,
@@ -81,8 +73,8 @@ const Home = () => {
 
   if (chapterData) {
     result = cloneDeep(chapterData.chapter);
-    result.texts = result.texts.filter(t =>
-      t.text.some(n => n >= verseStart && n <= verseEnd),
+    result.texts = result.texts.filter((t) =>
+      t.text.some((n) => n >= verseStart && n <= verseEnd)
     );
     result.wordsCount = result.texts.reduce((res, cur) => {
       res += cur.wordsCount.overall;
@@ -111,22 +103,22 @@ const Home = () => {
     });
   }
 
-  // let [allSizes, allSizesLoading] = useFetch(
-  //   useWordsCount
-  //     ? `/api/sizes?chapter=${chapterStart}&verse=${verseStart}&words=${words}`
-  //     : `/api/sizes?chapter=${chapterStart}&verse=${verseStart}`
-  // );
+  let [allSizes, allSizesLoading] = useFetch(
+    useWordsCount
+      ? `/api/sizes?chapter=${chapterStart}&verse=${verseStart}&words=${words}`
+      : `/api/sizes?chapter=${chapterStart}&verse=${verseStart}`
+  );
 
-  // if (
-  //   useWordsCount &&
-  //   !allSizesLoading &&
-  //   allSizes[allSizes.length - 1].text[0] !== verseEnd
-  // ) {
-  //   changeShow({
-  //     ...show,
-  //     verseEnd: allSizes[allSizes.length - 1].text[0]
-  //   });
-  // }
+  if (
+    useWordsCount &&
+    !allSizesLoading &&
+    allSizes[allSizes.length - 1].text[0] !== verseEnd
+  ) {
+    changeShow({
+      ...show,
+      verseEnd: allSizes[allSizes.length - 1].text[0],
+    });
+  }
 
   return (
     <>
@@ -138,9 +130,7 @@ const Home = () => {
       </Head>
       {!clean ? (
         <Configuration classes={classes} show={show} changeShow={changeShow} />
-      ) : (
-        undefined
-      )}
+      ) : undefined}
       {chapterLoading && !result ? (
         'Вспоминаем'
       ) : (
