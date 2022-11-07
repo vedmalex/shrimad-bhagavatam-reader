@@ -87,7 +87,6 @@ const Home = () => {
 
   if (!chapterLoading && !textsLoading && !allChapterLoading) {
     textCount = texts.length;
-    debugger;
     result = [
       {
         ...chapter,
