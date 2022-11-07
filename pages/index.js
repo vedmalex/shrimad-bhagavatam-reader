@@ -211,7 +211,6 @@ const Home = () => {
           </Button>
           <Slider
             className={classes.slider}
-            valueLabelDisplay="auto"
             aria-labelledby="range-slider"
             value={[show.verseStart, show.verseEnd]}
             label="Тексты"
